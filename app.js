@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
@@ -60,13 +62,18 @@ app.use((error, req, res, next) => {
 })
 
 mongoose
-    .connect('mongodb://localhost:27017/messages', {
+    .connect(process.env.MONGODB_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
     .then(result => {
-        app.listen(8080, () => {
-            console.log('...Listening on port 8080')
+        const port = process.env.PORT || 8080
+        const server = app.listen(8080, () => {
+            console.log(`...Listening on port ${port}`)
+        })
+        const io = require('socket.io')(server)
+        io.on('connection', socket => {
+            console.log('Client connected')
         })
     })
     .catch(err => console.log(err))
