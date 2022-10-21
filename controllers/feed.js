@@ -5,9 +5,11 @@ const fs = require('fs')
 const Post = require('../models/post')
 const User = require('../models/user')
 
+const socket = require('../socket')
+
 exports.getPosts = async (req, res, next) => {
     const currentPage = req.query.page || 1
-    const perPage = 1
+    const perPage = 10
 
     try {
         const totalItems = await Post.find().countDocuments()
@@ -66,6 +68,10 @@ exports.createPost = (req, res, next) => {
             return user.save()
         })
         .then(result => {
+            socket.getIO().emit('posts', {
+                action: 'create',
+                post: post,
+            })
             res.status(201).json({
                 message: 'Post created successfully!',
                 post: post,
@@ -141,6 +147,7 @@ exports.updatePost = (req, res, next) => {
             return post.save()
         })
         .then(result => {
+            socket.getIO().emit('posts', { action: 'update', post: result })
             res.status(200).json({ message: 'Post updated!', post: result })
         })
         .catch(err => {
@@ -176,6 +183,7 @@ exports.deletePost = (req, res, next) => {
             return user.save()
         })
         .then(result => {
+            socket.getIO().emit('posts', { action: 'delete', post: postId })
             res.status(200).json({ message: 'Deleted post.' })
         })
         .catch(err => next(err))

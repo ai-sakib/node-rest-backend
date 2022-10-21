@@ -68,10 +68,10 @@ mongoose
     })
     .then(result => {
         const port = process.env.PORT || 8080
-        const server = app.listen(8080, () => {
+        const server = app.listen(port, () => {
             console.log(`...Listening on port ${port}`)
         })
-        const io = require('socket.io')(server)
+        const io = require('./socket').init(server)
         io.on('connection', socket => {
             console.log('Client connected')
         })
